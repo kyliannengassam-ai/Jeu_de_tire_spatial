@@ -5,7 +5,7 @@
 #define RENDERER_H
 #include<SDL3/SDL.h>
 #include"Game.h"
-#include<SDL3_image/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 
 class Renderer{
     public:
@@ -20,8 +20,9 @@ class Renderer{
      //Ici on stockera plus tard les textures
      SDL_Texture* mTextureVaisseau;
      SDL_Texture* mTextureAsteroide;
+     SDL_Texture* mTextureFond;
      // fonctions utilitaires pour charger l'image
-     //SDL_Texture* ChargerTexture(const char* filePath, SDL_Renderer* renderer);
+     SDL_Texture* ChargerTexture(const char* chemin, SDL_Renderer* renderer);
 };
 
 #endif

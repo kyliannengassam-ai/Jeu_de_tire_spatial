@@ -1,17 +1,12 @@
-#include "Renderer.h"
+#include ".../include/Renderer.h"
 #include <iostream>
-#include <SDL3_image/SDL_image.h>
+#include<SDL3_image/SDL_image.h>
 
 Renderer::Renderer()
     : mTextureVaisseau(nullptr), mTextureAsteroide(nullptr) {
 }
 
 bool Renderer::Initialiser(SDL_Renderer* renderer) {
-    //Initialiser SDL_image pour supporter le format PNG
-     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        SDL_Log("Erreur SDL_image:%s ", SDL_GetError());
-        return false;
-    }
     // Charger les textures
     mTextureVaisseau = IMG_LoadTexture(renderer, "assets/sprites/vaisseau.png");
     mTextureAsteroide = IMG_LoadTexture(renderer, "assets/sprites/asteroide.png");
@@ -60,6 +55,5 @@ void Renderer::Nettoyer() {
     }
     if (mTextureAsteroide) {
         SDL_DestroyTexture(mTextureAsteroide);
-        IMG_Quit();
     }
 }
