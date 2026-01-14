@@ -20,24 +20,27 @@ void Game::InitialiserJeu(){
 void Game::GererEntrees(const bool* keys){
     // Deplacement du vaisseau joueur
     if(keys[SDL_SCANCODE_LEFT] || keys[SDL_SCANCODE_A]){
-        mJoueur.mPosX -= mJoueur.mVitesse * 0.016f; // Supposant 60 FPS
+        mJoueur.mPosX -= mJoueur.mVitesse ; 
         if(mJoueur.mPosX < 0) mJoueur.mPosX = 0;
     }
     if(keys[SDL_SCANCODE_RIGHT] || keys[SDL_SCANCODE_D]){
         mJoueur.mPosX += mJoueur.mVitesse * 0.016f; // Supposant 60 FPS
         if(mJoueur.mPosX + mJoueur.mW > 800) mJoueur.mPosX = 800 - mJoueur.mW;
     }
-    static bool bSpacePressed = false;
+    if (keys[SDL_SCANCODE_UP] || keys[SDL_SCANCODE_W]){
+        mJoueur.mPosY -= mJoueur.mVitesse ;
+        if(mJoueur.mPosY < 0) mJoueur.mPosY = 0;
+    }
+    if (keys[SDL_SCANCODE_DOWN] || keys[SDL_SCANCODE_S]){
+        mJoueur.mPosY += mJoueur.mVitesse ;
+        if(mJoueur.mPosY + mJoueur.mH > 600) mJoueur.mPosY = 600 - 64;
+    }
     // Tirer un projectile
     if(keys[SDL_SCANCODE_SPACE]){
-        if(!bSpacePressed){
         Tirer();
-        bSpacePressed = true;
-        }
-      }else{
-        bSpacePressed = false;
-        }
+        
     }
+}
 void Game::Tirer(){
     Projectile projectile;
     projectile.mPosX = mJoueur.mPosX + mJoueur.mW / 2 - 5;
@@ -71,7 +74,7 @@ void Game::Update(float deltaTime){
     }
     // Mettre a jour les asteroides
     for(auto& asteroide : mListeAsteroides){
-        asteroide.mPosY += asteroide.mVitesse * deltaTime;
+        asteroide.mPosY += 100.0f * deltaTime;
     }
     // Supprimer les objects inactifs ou hors ecran
     mProjectiles.erase(std::remove_if(mProjectiles.begin(), mProjectiles.end(),
@@ -79,5 +82,5 @@ void Game::Update(float deltaTime){
         mListeAsteroides.erase(std::remove_if(mListeAsteroides.begin(), mListeAsteroides.end(),
         [](const Asteroide& a){ return a.mPosY > 600; }), mListeAsteroides.end());
 }
-
+ 
         

@@ -1,4 +1,4 @@
-#include ".../include/Renderer.h"
+#include "../include/Renderer.h"
 #include <iostream>
 #include<SDL3_image/SDL_image.h>
 
@@ -30,18 +30,18 @@ void Renderer::AfficherScene(SDL_Renderer* renderer, const Game& game) {
     SDL_RenderClear(renderer);
     // Dessiner le vaisseau
     const Vaisseau& vaisseau = game.ObtenirVaisseau();
-    SDL_FRect rectVaisseau = { vaisseau.mPosX, vaisseau.mPosY, vaisseau.mW, vaisseau.mH };
+    SDL_FRect rectVaisseau = { vaisseau.mPosX, vaisseau.mPosY, 64.0f, 64.0f };
     SDL_RenderTexture(renderer, mTextureVaisseau, nullptr, &rectVaisseau);
     // Dessiner les asteroides
     for(const auto& a: game.ObtenirAsteroides()){
-        SDL_FRect rectAsteroide = { a.mPosX, a.mPosY, a.mW, a.mH };
+        SDL_FRect rectAsteroide = { a.mPosX, a.mPosY, 50.0f, 50.0f};
         
         SDL_RenderTexture(renderer, mTextureAsteroide, nullptr, &rectAsteroide);
     }
     //Dessiner les projectiles
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Jaune pour les projectiles
     for(const auto& p: game.ObtenirProjectiles()){
-        SDL_FRect rectProjectile = { p.mPosX, p.mPosY, p.mW, p.mH };
+        SDL_FRect rectProjectile = { p.mPosX, p.mPosY, 5.0f, 5.0f };
         SDL_RenderFillRect(renderer, &rectProjectile);
     }
     // Affichage final
