@@ -1,86 +1,155 @@
-#include"../include/Game.h"
-#include<algorithm> // Pour std::remove_if
+#include "../include/Game.h"
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
 
-Game::Game(): mIsGameOver(false){
+// Constructeur
+Game::Game()
+    : mIsGameOver(false), mScore(0), mLives(3)
+{
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
     InitialiserJeu();
 }
+
 void Game::InitialiserJeu(){
-    // Initialisation du vaisseau joueur
     mJoueur.mPosX = 400.0f;
     mJoueur.mPosY = 500.0f;
     mJoueur.mW = 50.0f;
     mJoueur.mH = 50.0f;
-    mJoueur.mVitesse = 300.0f; // Pixels par seconde
+    mJoueur.mVitesse = 500.0f; // pixels / seconde - augmentée
     mJoueur.mPointsDeVie = 3;
-    // vider les listes pour recommencer à zéro
+
     mProjectiles.clear();
     mListeAsteroides.clear();
+
+    mScore = 0;
+    mLives = 3;
+    mIsGameOver = false;
 }
+
 void Game::GererEntrees(const bool* keys){
-    // Deplacement du vaisseau joueur
+    // On utilise un pas temporel fixe pour le déplacement clavier (si tu veux précision, passe deltaTime)
+    const float frameTime = 1.0f / 60.0f;
     if(keys[SDL_SCANCODE_LEFT] || keys[SDL_SCANCODE_A]){
-        mJoueur.mPosX -= mJoueur.mVitesse ; 
-        if(mJoueur.mPosX < 0) mJoueur.mPosX = 0;
+        mJoueur.mPosX -= mJoueur.mVitesse * frameTime;
+        if(mJoueur.mPosX < 0.0f) mJoueur.mPosX = 0.0f;
     }
     if(keys[SDL_SCANCODE_RIGHT] || keys[SDL_SCANCODE_D]){
-        mJoueur.mPosX += mJoueur.mVitesse * 0.016f; // Supposant 60 FPS
-        if(mJoueur.mPosX + mJoueur.mW > 800) mJoueur.mPosX = 800 - mJoueur.mW;
+        mJoueur.mPosX += mJoueur.mVitesse * frameTime;
+        if(mJoueur.mPosX + mJoueur.mW > 800.0f) mJoueur.mPosX = 800.0f - mJoueur.mW;
     }
-    if (keys[SDL_SCANCODE_UP] || keys[SDL_SCANCODE_W]){
-        mJoueur.mPosY -= mJoueur.mVitesse ;
-        if(mJoueur.mPosY < 0) mJoueur.mPosY = 0;
+    if(keys[SDL_SCANCODE_UP] || keys[SDL_SCANCODE_W]){
+        mJoueur.mPosY -= mJoueur.mVitesse * frameTime;
+        if(mJoueur.mPosY < 0.0f) mJoueur.mPosY = 0.0f;
     }
-    if (keys[SDL_SCANCODE_DOWN] || keys[SDL_SCANCODE_S]){
-        mJoueur.mPosY += mJoueur.mVitesse ;
-        if(mJoueur.mPosY + mJoueur.mH > 600) mJoueur.mPosY = 600 - 64;
+    if(keys[SDL_SCANCODE_DOWN] || keys[SDL_SCANCODE_S]){
+        mJoueur.mPosY += mJoueur.mVitesse * frameTime;
+        if(mJoueur.mPosY + mJoueur.mH > 600.0f) mJoueur.mPosY = 600.0f - mJoueur.mH;
     }
-    // Tirer un projectile
-    if(keys[SDL_SCANCODE_SPACE]){
+
+    // Tirer sur appui (détecte la transition d'état pour éviter tirs continus)
+    static bool prevSpace = false;
+    bool space = keys[SDL_SCANCODE_SPACE] != 0;
+    if(space && !prevSpace){
         Tirer();
-        
     }
+    prevSpace = space;
 }
+
 void Game::Tirer(){
     Projectile projectile;
-    projectile.mPosX = mJoueur.mPosX + mJoueur.mW / 2 - 5;
+    projectile.mPosX = mJoueur.mPosX + mJoueur.mW / 2.0f - 5.0f;
     projectile.mPosY = mJoueur.mPosY;
-    projectile.mVitesse = 400.0f; // Pixels par seconde
+    projectile.mVitesse = 600.0f;
     projectile.mW = 10.0f;
     projectile.mH = 20.0f;
     projectile.bIsActive = true;
-
     mProjectiles.push_back(projectile);
 }
+
 void Game::GenererAsteroide(){
     Asteroide asteroide;
     asteroide.mW = 40.0f;
     asteroide.mH = 40.0f;
-    asteroide.mPosX = static_cast<float>(rand() % (800 - static_cast<int>(asteroide.mW)));
-    asteroide.mPosY = -asteroide.mH; // Commence au-dessus de l'écran
-    asteroide.mVitesse = 100.0f + static_cast<float>(rand() % 100); // Vitesse aléatoire entre 100 et 200 pixels par seconde
-    asteroide.mType = rand() % 3; // Trois types d'asteroides
+    asteroide.mPosX = static_cast<float>(std::rand() % (800 - static_cast<int>(asteroide.mW)));
+    asteroide.mPosY = -asteroide.mH;
+    asteroide.mVitesse = 200.0f + static_cast<float>(std::rand() % 150);
+    asteroide.mType = std::rand() % 3;
     mListeAsteroides.push_back(asteroide);
 }
+
+static bool RectsIntersect(float ax, float ay, float aw, float ah, float bx, float by, float bw, float bh){
+    return !(ax + aw < bx || bx + bw < ax || ay + ah < by || by + bh < ay);
+}
+
 void Game::Update(float deltaTime){
-    // Mettre à jour les projectiles
-    for(auto& projectile : mProjectiles){
-        if(projectile.bIsActive){
-            projectile.mPosY -= projectile.mVitesse * deltaTime;
-            if(projectile.mPosY + projectile.mH < 0){
-                projectile.bIsActive = false; // Désactiver le projectile s'il sort de l'ecran
+    if(mIsGameOver) return;
+
+    // Déplacer projectiles
+    for(auto& p : mProjectiles){
+        if(p.bIsActive){
+            p.mPosY -= p.mVitesse * deltaTime;
+            if(p.mPosY + p.mH < 0.0f){
+                p.bIsActive = false;
             }
         }
     }
-    // Mettre a jour les asteroides
-    for(auto& asteroide : mListeAsteroides){
-        asteroide.mPosY += 100.0f * deltaTime;
+
+    // Déplacer astéroïdes
+    for(auto& a : mListeAsteroides){
+        a.mPosY += a.mVitesse * deltaTime;
     }
-    // Supprimer les objects inactifs ou hors ecran
+
+    // Collision entre projectiles et astéroïdes
+    for(auto& a : mListeAsteroides){
+        for(auto& p : mProjectiles){
+            if(!p.bIsActive) continue;
+            if(RectsIntersect(p.mPosX, p.mPosY, p.mW, p.mH, a.mPosX, a.mPosY, a.mW, a.mH)){
+                p.bIsActive = false;
+                // Marquer l'asteroide pour suppression en le déplaçant hors-écran et en changeant type
+                a.mPosY = 10000.0f;
+                a.mType = -1;
+                mScore += 100;
+                break;
+            }
+        }
+    }
+
+    // Collision entre astéroïdes et vaisseau
+    for(auto& a : mListeAsteroides){
+        if(a.mType != -1 && RectsIntersect(mJoueur.mPosX, mJoueur.mPosY, mJoueur.mW, mJoueur.mH,
+                                          a.mPosX, a.mPosY, a.mW, a.mH)){
+            mIsGameOver = true;
+            std::cout << "Collision! Game Over\nScore: " << mScore << " | Vies: " << mLives << "\n";
+            return; // Arrête le jeu immédiatement
+        }
+    }
+
+    // Gestion astéroïdes arrivés en bas -> perte de vie
+    for(auto& a : mListeAsteroides){
+        if(a.mPosY > 600.0f && a.mType != -1){
+            mLives = (mLives - 1 >= 0) ? mLives - 1 : 0;
+            a.mType = -1; // marquer pour suppression
+        }
+    }
+
+    // Supprimer projectiles inactifs
     mProjectiles.erase(std::remove_if(mProjectiles.begin(), mProjectiles.end(),
         [](const Projectile& p){ return !p.bIsActive; }), mProjectiles.end());
-        mListeAsteroides.erase(std::remove_if(mListeAsteroides.begin(), mListeAsteroides.end(),
-        [](const Asteroide& a){ return a.mPosY > 600; }), mListeAsteroides.end());
+
+    // Supprimer astéroïdes marqués ou hors écran
+    mListeAsteroides.erase(std::remove_if(mListeAsteroides.begin(), mListeAsteroides.end(),
+        [](const Asteroide& a){ return a.mType == -1 || a.mPosY > 1000.0f; }), mListeAsteroides.end());
+
+    // Génération aléatoire d'astéroïdes (probabilité simple par update)
+    if((std::rand() % 1000) < 10){ // ~1% par frame
+        GenererAsteroide();
+    }
+
+    // Vérifier game over
+    if(mLives <= 0){
+        mIsGameOver = true;
+        std::cout << "Game Over\n";
+    }
 }
- 
-        

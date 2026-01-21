@@ -1,28 +1,31 @@
-/**
- * Renderer.h -Module d'affichage
- */
 #ifndef RENDERER_H
 #define RENDERER_H
-#include<SDL3/SDL.h>
-#include"Game.h"
-#include <SDL3_image/SDL_image.h>
 
-class Renderer{
-    public:
-        Renderer();
-        //Initialisation du moteur de rendu
-        bool Initialiser(SDL_Renderer* renderer);
-        //Dessine l'integralite de la scene du jeu
-        void AfficherScene(SDL_Renderer*renderer, const Game& game);
-        //Nettoyage des textures
-        void Nettoyer();
-    private:
-     //Ici on stockera plus tard les textures
-     SDL_Texture* mTextureVaisseau;
-     SDL_Texture* mTextureAsteroide;
-     SDL_Texture* mTextureFond;
-     // fonctions utilitaires pour charger l'image
-     SDL_Texture* ChargerTexture(const char* chemin, SDL_Renderer* renderer);
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include "../include/Game.h"
+#include <string>
+
+class Renderer {
+public:
+    Renderer();
+    ~Renderer();
+
+    bool Initialiser(SDL_Renderer* renderer); // charge textures
+    void AfficherScene(SDL_Renderer* renderer, const Game& game);
+    void Nettoyer();
+
+private:
+    SDL_Texture* mTextureVaisseau = nullptr;
+    SDL_Texture* mTextureAsteroide = nullptr;
+    SDL_Texture* mTextureFond = nullptr;
+
+    const std::string mPathVaisseau  = "assets/sprites/vaisseau.png";
+    const std::string mPathAsteroide = "assets/sprites/asteroide.png";
+    const std::string mPathFond      = "assets/sprites/fond.png";
+
+    SDL_Texture* ChargerTexture(const std::string& chemin, SDL_Renderer* renderer);
+    void LibererTexture(SDL_Texture*& tex);
 };
 
-#endif
+#endif // RENDERER_H

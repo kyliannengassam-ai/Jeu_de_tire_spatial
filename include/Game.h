@@ -1,67 +1,74 @@
+
+  // ...existing code...
 /**
  * Game.h - Logique du jeu de tire spatial
- * Description : Fusion de la logique du vaisseau, des projectiles et des asteroides.
  */
 
-  #ifndef GAME_H
-  #define GAME_H
-  
-  #include <vector> // Necessaire pour stocker les listes de tirs et d'ennemis
-  #include <SDL3/SDL.h>
+#ifndef GAME_H
+#define GAME_H
 
-  /**
-   * struct Vaisseau - Donnees du joueur
-   */
-  struct Vaisseau {
-    float mPosX;
-    float mPosY;
-    float mW, mH; // Dimensions du vaisseau
-    float mVitesse;      // Vitesse de deplacement du vaisseau
-    int mPointsDeVie;           // Points de vie du vaisseau
-  };
-  /**
-   * struct projectile - Une munition tiree
-   */
-  struct Projectile {
-    float mPosX;
-    float mPosY;
-    float mW, mH; //Dimensions du projectile
-    float mVitesse; // Vitesse du projectile
-    bool bIsActive; // Indique si le projectile est actif
-  };
-  /**
-   * struct Asteroide - un ennemi
-   */
-  struct Asteroide {
-    float mPosX;
-    float mPosY;
-    float mW, mH; // Dimensions de l'asteroide
-    float mVitesse; // Vitesse de l'asteroide
-    int mType;
-  };
-  /**
-   * class Game - Gestion de la logique du jeu
-   */
-  class Game{
-    public:
-        Game();
-        void InitialiserJeu();
-        void Update(float deltaTime);
-        void GererEntrees(const bool* keys);
-        // Nouvelles fonctionnalites du combat
-        void Tirer();
-        void GenererAsteroide();
-        // Accesseurs pour le rendu
-        const  Vaisseau& ObtenirVaisseau() const{return mJoueur;}
-        // Accesseurs pour voir les tirs et asteroides
-        const std::vector<Projectile>& ObtenirProjectiles() const {return mProjectiles;}
-        const std::vector<Asteroide>& ObtenirAsteroides() const {return mListeAsteroides;}
-        private:
-        Vaisseau mJoueur;
-        bool mIsGameOver;
-        // Listes dynamiques 
-        std::vector<Projectile> mProjectiles;
-        std::vector<Asteroide> mListeAsteroides;
-  };
+#include <vector>
+#include <SDL3/SDL.h>
 
-  #endif
+/* Données du joueur */
+struct Vaisseau {
+    float mPosX = 0.0f;
+    float mPosY = 0.0f;
+    float mW = 32.0f, mH = 32.0f;
+    float mVitesse = 300.0f;
+    int mPointsDeVie = 3;
+};
+
+/* Projectile */
+struct Projectile {
+    float mPosX = 0.0f;
+    float mPosY = 0.0f;
+    float mW = 8.0f, mH = 16.0f;
+    float mVitesse = 500.0f;
+    bool bIsActive = false;
+};
+
+/* Asteroide */
+struct Asteroide {
+    float mPosX = 0.0f;
+    float mPosY = 0.0f;
+    float mW = 32.0f, mH = 32.0f;
+    float mVitesse = 100.0f;
+    int mType = 0;
+};
+
+class Game {
+public:
+    Game();
+
+    void InitialiserJeu();
+    void Update(float deltaTime);
+    void GererEntrees(const bool* keys);
+    void Tirer();
+    void GenererAsteroide();
+
+    // Accesseurs pour le rendu et l'UI (utilisés par UI.cpp)
+    int GetScore() const { return mScore; }
+    int GetLives() const { return mLives; }
+    bool IsGameOver() const { return mIsGameOver; }
+
+    const Vaisseau& ObtenirVaisseau() const { return mJoueur; }
+    const std::vector<Projectile>& ObtenirProjectiles() const { return mProjectiles; }
+    const std::vector<Asteroide>& ObtenirAsteroides() const { return mListeAsteroides; }
+
+    // Modificateurs utiles
+    void AjouterScore(int pts) { mScore += pts; }
+    void PerdreVie(int n = 1) { mLives = (mLives - n >= 0) ? mLives - n : 0; }
+
+private:
+    Vaisseau mJoueur;
+    bool mIsGameOver = false;
+    std::vector<Projectile> mProjectiles;
+    std::vector<Asteroide> mListeAsteroides;
+
+    // Valeurs pour l'UI
+    int mScore = 0;
+    int mLives = 3;
+};
+
+#endif // GAME_H
