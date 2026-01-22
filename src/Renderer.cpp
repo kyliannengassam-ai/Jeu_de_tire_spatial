@@ -52,8 +52,8 @@ void Renderer::AfficherScene(SDL_Renderer* renderer, const Game& game) {
 
     // Vaisseau
     const auto& v = game.ObtenirVaisseau();
-    SDL_FRect dstV = { static_cast<int>(v.mPosX), static_cast<int>(v.mPosY),
-                      static_cast<int>(v.mW), static_cast<int>(v.mH) };
+    SDL_FRect dstV = { static_cast<float>(v.mPosX), static_cast<float>(v.mPosY),
+                      static_cast<float>(v.mW), static_cast<float>(v.mH) };
     if (mTextureVaisseau) {
         SDL_RenderTexture(renderer, mTextureVaisseau, nullptr, &dstV);
     } else {
@@ -65,15 +65,15 @@ void Renderer::AfficherScene(SDL_Renderer* renderer, const Game& game) {
     for (const auto& p : game.ObtenirProjectiles()) {
         if (!p.bIsActive) continue;
         SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-        SDL_FRect dstP = { static_cast<int>(p.mPosX), static_cast<int>(p.mPosY),
-                          static_cast<int>(p.mW), static_cast<int>(p.mH) };
+        SDL_FRect dstP = { static_cast<float>(p.mPosX), static_cast<float>(p.mPosY),
+                          static_cast<float>(p.mW), static_cast<float>(p.mH) };
         SDL_RenderFillRect(renderer, &dstP);
     }
 
     // Asteroides
     for (const auto& a : game.ObtenirAsteroides()) {
-        SDL_FRect dstA = { static_cast<int>(a.mPosX), static_cast<int>(a.mPosY),
-                          static_cast<int>(a.mW), static_cast<int>(a.mH) };
+        SDL_FRect dstA = { static_cast<float>(a.mPosX), static_cast<float>(a.mPosY),
+                          static_cast<float>(a.mW), static_cast<float>(a.mH) };
         if (mTextureAsteroide) {
             SDL_RenderTexture(renderer, mTextureAsteroide, nullptr, &dstA);
         } else {

@@ -9,6 +9,13 @@
 #include <string>
 #include "../include/Game.h"
 
+// Énumération pour les actions de la fenêtre Game Over
+enum class GameOverAction {
+    None,
+    Restart,
+    Quit
+};
+
 class UI {
 public:
     UI();
@@ -19,6 +26,10 @@ public:
 
     // Afficher l'interface (score, vies, etc.) par dessus le jeu
     void AfficherInterface(const Game& game);
+
+    // Retourner l'action sélectionnée dans la fenêtre Game Over
+    GameOverAction GetGameOverAction() const { return m_gameOverAction; }
+    void ResetGameOverAction() { m_gameOverAction = GameOverAction::None; }
 
     // Nettoyer les ressources de l'interface
     void Nettoyer();
@@ -34,7 +45,7 @@ private:
     bool m_showWindow;           // État de la fenêtre UI
     SDL_Window* m_window;
     SDL_Renderer* m_renderer;
-    
+    GameOverAction m_gameOverAction = GameOverAction::None;
 
     // Valeurs affichées (peuvent être synchronisées depuis Game dans AfficherInterface)
     int m_score;
@@ -42,4 +53,3 @@ private:
 };
 
 #endif // UI_H
-// ...existing code...

@@ -17,7 +17,7 @@ void Game::InitialiserJeu(){
     mJoueur.mPosY = 500.0f;
     mJoueur.mW = 50.0f;
     mJoueur.mH = 50.0f;
-    mJoueur.mVitesse = 500.0f; // pixels / seconde - augmentée
+    mJoueur.mVitesse = 400.0f; // pixels / seconde
     mJoueur.mPointsDeVie = 3;
 
     mProjectiles.clear();
@@ -59,10 +59,10 @@ void Game::GererEntrees(const bool* keys){
 
 void Game::Tirer(){
     Projectile projectile;
-    projectile.mPosX = mJoueur.mPosX + mJoueur.mW / 2.0f - 5.0f;
+    projectile.mPosX = mJoueur.mPosX + mJoueur.mW / 2.0f - 7.5f;
     projectile.mPosY = mJoueur.mPosY;
-    projectile.mVitesse = 600.0f;
-    projectile.mW = 10.0f;
+    projectile.mVitesse = 700.0f;
+    projectile.mW = 5.0f;
     projectile.mH = 20.0f;
     projectile.bIsActive = true;
     mProjectiles.push_back(projectile);
@@ -74,7 +74,7 @@ void Game::GenererAsteroide(){
     asteroide.mH = 40.0f;
     asteroide.mPosX = static_cast<float>(std::rand() % (800 - static_cast<int>(asteroide.mW)));
     asteroide.mPosY = -asteroide.mH;
-    asteroide.mVitesse = 200.0f + static_cast<float>(std::rand() % 150);
+    asteroide.mVitesse = 50.0f + static_cast<float>(std::rand() % 150);
     asteroide.mType = std::rand() % 3;
     mListeAsteroides.push_back(asteroide);
 }
@@ -120,9 +120,11 @@ void Game::Update(float deltaTime){
     for(auto& a : mListeAsteroides){
         if(a.mType != -1 && RectsIntersect(mJoueur.mPosX, mJoueur.mPosY, mJoueur.mW, mJoueur.mH,
                                           a.mPosX, a.mPosY, a.mW, a.mH)){
-            mIsGameOver = true;
-            std::cout << "Collision! Game Over\nScore: " << mScore << " | Vies: " << mLives << "\n";
-            return; // Arrête le jeu immédiatement
+            // Perte de vie sans arrêter le jeu immédiatement
+            mLives = (mLives - 1 >= 0) ? mLives - 1 : 0;
+            a.mPosY = 10000.0f;
+            a.mType = -1; // marquer pour suppression
+            std::cout << "Collision! Vies: " << mLives << "\n";
         }
     }
 
@@ -152,4 +154,8 @@ void Game::Update(float deltaTime){
         mIsGameOver = true;
         std::cout << "Game Over\n";
     }
+}
+
+void Game::ResetGame(){
+    InitialiserJeu();
 }

@@ -7,7 +7,7 @@ echo ================================
 echo compilation en cours...
 echo ================================
 
-g++ src\*.cpp ^
+clang++ src\*.cpp ^
 external\imgui\imgui.cpp ^
 external\imgui\imgui_draw.cpp ^
 external\imgui\imgui_tables.cpp ^

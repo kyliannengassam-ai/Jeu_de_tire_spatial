@@ -46,6 +46,7 @@ public:
     void GererEntrees(const bool* keys);
     void Tirer();
     void GenererAsteroide();
+    void ResetGame(); // Réinitialiser le jeu
 
     // Accesseurs pour le rendu et l'UI (utilisés par UI.cpp)
     int GetScore() const { return mScore; }
