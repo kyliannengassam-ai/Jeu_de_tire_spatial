@@ -6,10 +6,10 @@
 
 // Constructeur
 Game::Game()
-    : mIsGameOver(false), mScore(0), mLives(3)
+    : mIsGameOver(false), mScore(0), mLives(3), mDifficulty(Difficulty::Easy), 
+      mGameState(GameState::Menu), mElapsedTime(0.0f)
 {
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
-    InitialiserJeu();
 }
 
 void Game::InitialiserJeu(){
@@ -17,14 +17,38 @@ void Game::InitialiserJeu(){
     mJoueur.mPosY = 500.0f;
     mJoueur.mW = 50.0f;
     mJoueur.mH = 50.0f;
-    mJoueur.mVitesse = 400.0f; // pixels / seconde
+    mJoueur.mVitesse = 50.0f; // pixels / seconde
     mJoueur.mPointsDeVie = 3;
 
     mProjectiles.clear();
     mListeAsteroides.clear();
 
     mScore = 0;
-    mLives = 3;
+    mElapsedTime = 0.0f;
+    
+    // Définir les paramètres selon la difficulté
+    switch(mDifficulty) {
+        case Difficulty::Easy:
+            mLives = 5;
+            mMaxAsteroids = 3;
+            mAsteroidSpawnChance = 5.0f;
+            mAsteroidSpawnDecreasePerSecond = 0.03f;
+            break;
+        case Difficulty::Medium:
+            mLives = 3;
+            mMaxAsteroids = 6;
+            mAsteroidSpawnChance = 10.0f;
+            mAsteroidSpawnDecreasePerSecond = 0.05f;
+            break;
+        case Difficulty::Hard:
+            mLives = 2;
+            mMaxAsteroids = 10;
+            mAsteroidSpawnChance = 15.0f;
+            mAsteroidSpawnDecreasePerSecond = 0.08f;
+            break;
+    }
+    
+    mGameState = GameState::Playing;
     mIsGameOver = false;
 }
 
@@ -84,7 +108,12 @@ static bool RectsIntersect(float ax, float ay, float aw, float ah, float bx, flo
 }
 
 void Game::Update(float deltaTime){
-    if(mIsGameOver) return;
+    if(mGameState != GameState::Playing) return;
+
+    // Accumulate elapsed time and decrease asteroid spawn chance
+    mElapsedTime += deltaTime;
+    float currentSpawnChance = mAsteroidSpawnChance - (mElapsedTime * mAsteroidSpawnDecreasePerSecond);
+    if(currentSpawnChance < 1.0f) currentSpawnChance = 1.0f;  // Spawn minimum d'1%
 
     // Déplacer projectiles
     for(auto& p : mProjectiles){
@@ -144,14 +173,17 @@ void Game::Update(float deltaTime){
     mListeAsteroides.erase(std::remove_if(mListeAsteroides.begin(), mListeAsteroides.end(),
         [](const Asteroide& a){ return a.mType == -1 || a.mPosY > 1000.0f; }), mListeAsteroides.end());
 
-    // Génération aléatoire d'astéroïdes (probabilité simple par update)
-    if((std::rand() % 1000) < 10){ // ~1% par frame
-        GenererAsteroide();
+    // Génération aléatoire d'astéroïdes avec chance décroissante
+    if(static_cast<int>(mListeAsteroides.size()) < mMaxAsteroids) {
+        if((std::rand() % 1000) < currentSpawnChance) {
+            GenererAsteroide();
+        }
     }
 
     // Vérifier game over
     if(mLives <= 0){
         mIsGameOver = true;
+        mGameState = GameState::GameOver;
         std::cout << "Game Over\n";
     }
 }

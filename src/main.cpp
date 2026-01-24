@@ -114,16 +114,30 @@
          ImGui_ImplSDL3_NewFrame();
          ImGui::NewFrame();
 
-         // Affichage de l'interface (HUD + Game Over)
+         // Affichage de l'interface (Menu, HUD + Game Over)
          ui.AfficherInterface(game);
 
+         // Gestion des actions du menu de sélection de difficulté
+         MenuAction menuAction = ui.GetMenuAction();
+         if (menuAction == MenuAction::SelectEasy) {
+             game.SetDifficulty(Difficulty::Easy);
+         } else if (menuAction == MenuAction::SelectMedium) {
+             game.SetDifficulty(Difficulty::Medium);
+         } else if (menuAction == MenuAction::SelectHard) {
+             game.SetDifficulty(Difficulty::Hard);
+         } else if (menuAction == MenuAction::StartGame) {
+             game.InitialiserJeu();  // Lance le jeu avec la difficulté sélectionnée
+             ui.ResetMenuAction();
+         }
+         
          // Gestion des actions du menu Game Over
-         GameOverAction action = ui.GetGameOverAction();
-         if (action == GameOverAction::Restart) {
-             game.ResetGame();
+         GameOverAction gameOverAction = ui.GetGameOverAction();
+         if (gameOverAction == GameOverAction::Restart) {
+             game.InitialiserJeu();
              ui.ResetGameOverAction();
-         } else if (action == GameOverAction::Quit) {
-             running = false;
+         } else if (gameOverAction == GameOverAction::Menu) {
+             game.SetGameState(GameState::Menu);
+             ui.ResetGameOverAction();
          }
 
          // Rendu ImGui
