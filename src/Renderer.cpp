@@ -50,14 +50,28 @@ void Renderer::AfficherScene(SDL_Renderer* renderer, const Game& game) {
         SDL_RenderClear(renderer);
     }
 
-    // Vaisseau
+    // Vaisseau avec effet de clignotement si invulnérable
     const auto& v = game.ObtenirVaisseau();
     SDL_FRect dstV = { static_cast<float>(v.mPosX), static_cast<float>(v.mPosY),
                       static_cast<float>(v.mW), static_cast<float>(v.mH) };
-    if (mTextureVaisseau) {
-        SDL_RenderTexture(renderer, mTextureVaisseau, nullptr, &dstV);
-    } else {
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    
+    // Clignotement: alterner la visibilité du vaisseau
+    bool shouldDrawShip = true;
+    if (game.ShouldShipBlink()) {
+        // Clignotement 4 fois par seconde (période de 0.25s)
+        shouldDrawShip = (static_cast<int>(v.mInvulnerabilityTime * 4) % 2) == 0;
+    }
+    
+    if (shouldDrawShip) {
+        if (mTextureVaisseau) {
+            SDL_RenderTexture(renderer, mTextureVaisseau, nullptr, &dstV);
+        } else {
+            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+            SDL_RenderFillRect(renderer, &dstV);
+        }
+    } else if (game.ShouldShipBlink()) {
+        // Afficher une version semi-transparente quand le vaisseau "disparaît"
+        SDL_SetRenderDrawColor(renderer, 0, 200, 0, 100);
         SDL_RenderFillRect(renderer, &dstV);
     }
 

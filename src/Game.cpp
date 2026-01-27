@@ -17,7 +17,7 @@ void Game::InitialiserJeu(){
     mJoueur.mPosY = 500.0f;
     mJoueur.mW = 50.0f;
     mJoueur.mH = 50.0f;
-    mJoueur.mVitesse = 50.0f; // pixels / seconde
+    mJoueur.mVitesse = 20.0f; // pixels / seconde
     mJoueur.mPointsDeVie = 3;
 
     mProjectiles.clear();
@@ -110,6 +110,11 @@ static bool RectsIntersect(float ax, float ay, float aw, float ah, float bx, flo
 void Game::Update(float deltaTime){
     if(mGameState != GameState::Playing) return;
 
+    // Mettre à jour l'invulnérabilité du vaisseau
+    if(mJoueur.mInvulnerabilityTime > 0.0f){
+        mJoueur.mInvulnerabilityTime -= deltaTime;
+    }
+
     // Accumulate elapsed time and decrease asteroid spawn chance
     mElapsedTime += deltaTime;
     float currentSpawnChance = mAsteroidSpawnChance - (mElapsedTime * mAsteroidSpawnDecreasePerSecond);
@@ -147,21 +152,15 @@ void Game::Update(float deltaTime){
 
     // Collision entre astéroïdes et vaisseau
     for(auto& a : mListeAsteroides){
-        if(a.mType != -1 && RectsIntersect(mJoueur.mPosX, mJoueur.mPosY, mJoueur.mW, mJoueur.mH,
-                                          a.mPosX, a.mPosY, a.mW, a.mH)){
-            // Perte de vie sans arrêter le jeu immédiatement
+        if(a.mType != -1 && mJoueur.mInvulnerabilityTime <= 0.0f && 
+           RectsIntersect(mJoueur.mPosX, mJoueur.mPosY, mJoueur.mW, mJoueur.mH,
+                          a.mPosX, a.mPosY, a.mW, a.mH)){
+            // Perte de vie avec invulnérabilité temporaire
             mLives = (mLives - 1 >= 0) ? mLives - 1 : 0;
+            mJoueur.mInvulnerabilityTime = INVULNERABILITY_DURATION;
             a.mPosY = 10000.0f;
             a.mType = -1; // marquer pour suppression
-            std::cout << "Collision! Vies: " << mLives << "\n";
-        }
-    }
-
-    // Gestion astéroïdes arrivés en bas -> perte de vie
-    for(auto& a : mListeAsteroides){
-        if(a.mPosY > 600.0f && a.mType != -1){
-            mLives = (mLives - 1 >= 0) ? mLives - 1 : 0;
-            a.mType = -1; // marquer pour suppression
+            std::cout << "Collision! Vies: " << mLives << " | Invulnérabilité: " << INVULNERABILITY_DURATION << "s\n";
         }
     }
 

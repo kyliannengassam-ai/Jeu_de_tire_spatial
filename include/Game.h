@@ -1,5 +1,5 @@
 
-  // ...existing code...
+  
 /**
  * Game.h - Logique du jeu de tire spatial
  */
@@ -29,8 +29,9 @@ struct Vaisseau {
     float mPosX = 0.0f;
     float mPosY = 0.0f;
     float mW = 32.0f, mH = 32.0f;
-    float mVitesse = 300.0f;
+    float mVitesse = 100.0f;
     int mPointsDeVie = 3;
+    float mInvulnerabilityTime = 0.0f;  // Temps restant d'invulnérabilité
 };
 
 /* Projectile */
@@ -55,11 +56,11 @@ class Game {
 public:
     Game();
 
-    void InitialiserJeu();
-    void Update(float deltaTime);
-    void GererEntrees(const bool* keys);
-    void Tirer();
-    void GenererAsteroide();
+    void InitialiserJeu(); // Initialiser les variables du jeu
+    void Update(float deltaTime); // Mettre à jour l'état du jeu
+    void GererEntrees(const bool* keys); // Gerer les entrees de clavier
+    void Tirer(); // Créer un nouveau projectile
+    void GenererAsteroide(); // Générer un nouvel astéroïde
     void ResetGame(); // Réinitialiser le jeu
     
     // Gestion de la difficulté et l'état du jeu
@@ -73,6 +74,8 @@ public:
     int GetScore() const { return mScore; }
     int GetLives() const { return mLives; }
     bool IsGameOver() const { return mIsGameOver; }
+    bool IsShipInvulnerable() const { return mJoueur.mInvulnerabilityTime > 0.0f; }
+    bool ShouldShipBlink() const { return mJoueur.mInvulnerabilityTime > 0.0f; }
 
     const Vaisseau& ObtenirVaisseau() const { return mJoueur; }
     const std::vector<Projectile>& ObtenirProjectiles() const { return mProjectiles; }
@@ -101,5 +104,8 @@ private:
     float mAsteroidSpawnChance = 10.0f;  // % de chance par frame
     int mMaxAsteroids = 5;                // Nombre max d'astéroïdes simultanés
     float mAsteroidSpawnDecreasePerSecond = 0.05f; // Réduction progressive
+    
+    // Durée de l'invulnérabilité et de l'effet après collision (en secondes)
+    static constexpr float INVULNERABILITY_DURATION = 2.0f;
 };
 #endif // GAME_H
